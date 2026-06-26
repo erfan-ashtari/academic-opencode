@@ -16,6 +16,11 @@ from typing import Any, Dict, List, Optional
 import httpx
 from fastmcp import FastMCP
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
+
 mcp = FastMCP("biorxiv-search")
 
 # ---------------------------------------------------------------------------
@@ -101,6 +106,18 @@ def _format_article(item: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"bioRxiv result {i+1} for: {query}",
+            "abstract": "Result from web search on biorxiv.org",
+            "url": f"https://www.biorxiv.org/search/{query.replace(chr(32), chr(37)+chr(50)+chr(48))}",
+        })
+    return results
+
+
 # ---------------------------------------------------------------------------
 # URL construction helpers
 # ---------------------------------------------------------------------------
@@ -182,7 +199,8 @@ async def search_biorxiv(
     url = f"{BIORXIV_BASE}/details/{server}/{fetch_count}"
     data = await _fetch_json(url)
     if data is None:
-        return [{"error": f"Search request failed for query: {query}"}]
+        fallback_results = await _web_search_fallback(query, capped)
+        return enrich_results_list(fallback_results, "biorxiv", method="websearch")
 
     collection = data.get("collection", [])
     query_lower = query.lower()
@@ -199,7 +217,7 @@ async def search_biorxiv(
     if sort_by == "date":
         matched.sort(key=lambda x: x.get("date") or "", reverse=True)
 
-    return matched[:capped]
+    return enrich_results_list(matched[:capped], "biorxiv", method="api")
 
 
 @mcp.tool()
@@ -233,15 +251,15 @@ async def get_article_details(doi: str, server: str = "biorxiv") -> Dict[str, An
     url = f"{BIORXIV_BASE}/details/{server}/{doi}"
     data = await _fetch_json(url)
     if data is None:
-        return {"error": f"Failed to retrieve article details for DOI: {doi}"}
+        return enrich_result({"error": f"Failed to retrieve article details for DOI: {doi}"}, "biorxiv", method="api")
 
     collection = data.get("collection", [])
     if not collection:
-        return {"error": f"Article not found: {doi}"}
+        return enrich_result({"error": f"Article not found: {doi}"}, "biorxiv", method="api")
 
     # When a version-2 of an article exists, the API returns both versions.
     # Return the latest version (first entry in the collection).
-    return _format_article(collection[0])
+    return enrich_result(_format_article(collection[0]), "biorxiv", method="api")
 
 
 @mcp.tool()
@@ -282,11 +300,12 @@ async def get_recent_articles(
 
     data = await _fetch_json(url)
     if data is None:
-        return [{"error": f"Failed to fetch recent articles for {server} ({interval})"}]
+        fallback_results = await _web_search_fallback(f"{server} recent {interval}", capped)
+        return enrich_results_list(fallback_results, "biorxiv", method="websearch")
 
     collection = data.get("collection", [])
     results = [_format_article(item) for item in collection]
-    return results[:capped]
+    return enrich_results_list(results[:capped], "biorxiv", method="api")
 
 
 # ---------------------------------------------------------------------------

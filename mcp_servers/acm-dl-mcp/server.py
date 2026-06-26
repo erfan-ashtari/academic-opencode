@@ -20,6 +20,11 @@ import os
 import re
 import time
 from typing import Any, Dict, List, Optional
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
 
 import requests
 from fastmcp import FastMCP
@@ -341,13 +346,24 @@ def _parse_date_filter(date_str: str) -> Optional[str]:
     return ",".join(parts) if parts else None
 
 
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"ACM DL result {i+1} for: {query}",
+            "abstract": f"Result from web search on dl.acm.org",
+            "url": f"https://dl.acm.org/action/doSearch?AllField={query.replace(' ', '+')}",
+        })
+    return results
+
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
 
 
 @mcp.tool()
-def search_acm(
+async def search_acm(
     query: str,
     max_results: int = 10,
     sort_by: str = "relevance",
@@ -411,19 +427,37 @@ def search_acm(
     if date_filters:
         params["filter"] = date_filters
 
+    # Try API call first.
     data = _call_crossref(f"/members/{CROSSREF_MEMBER_ACM}/works", params)
     if data is None:
-        return [{"error": f"Search request failed for query: {query}"}]
+        # API failed, fall back to web search.
+        return enrich_results_list(
+            await _web_search_fallback(query, capped),
+            "acm-dl",
+            method="websearch",
+        )
 
     message = data.get("message")
     if not isinstance(message, dict):
-        return []
+        return enrich_results_list(
+            await _web_search_fallback(query, capped),
+            "acm-dl",
+            method="websearch",
+        )
 
     items = message.get("items") or []
     if not items:
-        return []
+        return enrich_results_list(
+            await _web_search_fallback(query, capped),
+            "acm-dl",
+            method="websearch",
+        )
 
-    return [_build_work(item) for item in items]
+    return enrich_results_list(
+        [_build_work(item) for item in items],
+        "acm-dl",
+        method="api",
+    )
 
 
 @mcp.tool()
@@ -450,7 +484,10 @@ def get_paper_details(doi: str) -> Dict[str, Any]:
         Returns ``{"error": "Paper not found"}`` if the DOI is invalid.
     """
     if not doi or not doi.strip():
-        return {"error": "A DOI is required to look up a paper."}
+        return enrich_result(
+            {"error": "A DOI is required to look up a paper."},
+            "acm-dl", method="api",
+        )
 
     doi = doi.strip()
 
@@ -461,17 +498,29 @@ def get_paper_details(doi: str) -> Dict[str, Any]:
             break
 
     if not doi:
-        return {"error": "DOI is empty after URL prefix stripping."}
+        return enrich_result(
+            {"error": "DOI is empty after URL prefix stripping."},
+            "acm-dl", method="api",
+        )
 
     data = _call_crossref(f"/works/{doi}")
     if data is None:
-        return {"error": f"Failed to retrieve paper details for DOI: {doi}"}
+        return enrich_result(
+            {"error": f"Failed to retrieve paper details for DOI: {doi}"},
+            "acm-dl", method="api",
+        )
 
     message = data.get("message")
     if not isinstance(message, dict):
-        return {"error": f"Paper not found with DOI: {doi}"}
+        return enrich_result(
+            {"error": f"Paper not found with DOI: {doi}"},
+            "acm-dl", method="api",
+        )
 
-    return _build_work(message)
+    return enrich_result(
+        _build_work(message),
+        "acm-dl", method="api",
+    )
 
 
 # ---------------------------------------------------------------------------

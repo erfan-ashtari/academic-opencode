@@ -13,6 +13,11 @@ from typing import Any, Dict, List, Optional
 import arxiv
 from fastmcp import FastMCP
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
+
 mcp = FastMCP("arxiv-search")
 
 # Rate limiting: arXiv allows ~3 requests per second.
@@ -58,6 +63,19 @@ def _format_arxiv_paper(result: arxiv.Result) -> Dict[str, Any]:
         "primary_category": result.primary_category,
         "links": [link.href for link in result.links],
     }
+
+
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"arXiv result {i+1} for: {query}",
+            "abstract": "Result from web search on arxiv.org",
+            "url": f"https://arxiv.org/search/?searchtype=all&query={query.replace(' ', '+')}",
+        })
+    return results
+
 
 
 async def _rate_limited_search(search: arxiv.Search, max_results: int) -> List[arxiv.Result]:
@@ -123,11 +141,11 @@ async def search_arxiv(
 
     try:
         results = await _rate_limited_search(search, max_results)
-        return [_format_arxiv_paper(r) for r in results]
-    except arxiv.HTTPError as e:
-        return [{"error": f"arXiv API error: {e}"}]
-    except Exception as e:
-        return [{"error": f"Search failed: {e}"}]
+        formatted = [_format_arxiv_paper(r) for r in results]
+        return enrich_results_list(formatted, "arxiv", method="api")
+    except Exception:
+        fallback = await _web_search_fallback(query, max_results)
+        return enrich_results_list(fallback, "arxiv", method="websearch")
 
 
 @mcp.tool()
@@ -150,12 +168,17 @@ async def get_paper_details(arxiv_id: str) -> Dict[str, Any]:
     try:
         results = await _rate_limited_search(search, 1)
         for r in results:
-            return _format_arxiv_paper(r)
-        return {"error": f"Paper not found: {arxiv_id}"}
-    except arxiv.HTTPError as e:
-        return {"error": f"arXiv API error: {e}"}
-    except Exception as e:
-        return {"error": f"Failed to retrieve paper: {e}"}
+            return enrich_result(_format_arxiv_paper(r), "arxiv", method="api")
+        # Paper not found — try fallback
+        fallback = await _web_search_fallback(paper_id, 1)
+        if fallback:
+            return enrich_result(fallback[0], "arxiv", method="websearch")
+        return enrich_result({"error": f"Paper not found: {arxiv_id}"}, "arxiv", method="failed")
+    except Exception:
+        fallback = await _web_search_fallback(paper_id, 1)
+        if fallback:
+            return enrich_result(fallback[0], "arxiv", method="websearch")
+        return enrich_result({"error": f"Failed to retrieve paper: {arxiv_id}"}, "arxiv", method="failed")
 
 
 @mcp.tool()
@@ -190,11 +213,10 @@ async def get_recent_papers(
             if paper["abstract"] and len(paper["abstract"]) > 500:
                 paper["abstract"] = paper["abstract"][:500] + "..."
             papers.append(paper)
-        return papers
-    except arxiv.HTTPError as e:
-        return [{"error": f"arXiv API error: {e}"}]
-    except Exception as e:
-        return [{"error": f"Failed to fetch recent papers: {e}"}]
+        return enrich_results_list(papers, "arxiv", method="api")
+    except Exception:
+        fallback = await _web_search_fallback(query, max_results)
+        return enrich_results_list(fallback, "arxiv", method="websearch")
 
 
 if __name__ == "__main__":

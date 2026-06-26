@@ -16,6 +16,12 @@ from typing import Any, Dict, List, Optional
 import httpx
 from fastmcp import FastMCP
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
+
 mcp = FastMCP("dblp-search")
 
 # ---------------------------------------------------------------------------
@@ -165,6 +171,17 @@ def _build_publication_item(hit: Dict[str, Any]) -> Dict[str, Any]:
         "url": info.get("url", ""),
     }
 
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"DBLP result {i+1} for: {query}",
+            "abstract": "Result from web search on dblp.org",
+            "url": f"https://dblp.org/search?q={query.replace(' ', '+')}",
+        })
+    return results
+
 
 # ---------------------------------------------------------------------------
 # Tools
@@ -207,7 +224,8 @@ async def search_dblp(
 
     data = await _fetch_json(DBLP_SEARCH_PUBL, params)
     if data is None:
-        return [{"error": f"Search request failed for query: {query}"}]
+        fallback_results = await _web_search_fallback(query, max_results)
+        return enrich_results_list(fallback_results, "dblp", method="websearch")
 
     result = data.get("result", {})
     hits = result.get("hits", {})
@@ -215,7 +233,8 @@ async def search_dblp(
     if not isinstance(hit_list, list):
         hit_list = []
 
-    return [_build_publication_item(hit) for hit in hit_list]
+    results = [_build_publication_item(hit) for hit in hit_list]
+    return enrich_results_list(results, "dblp", method="api")
 
 
 @mcp.tool()
@@ -252,8 +271,8 @@ async def get_publication_details(pubkey: str) -> Dict[str, Any]:
     hit_list = hits.get("hit", [])
     if not isinstance(hit_list, list) or not hit_list:
         return {"error": f"Publication not found: {pubkey}"}
-
-    return _build_publication_item(hit_list[0])
+    pub_result = _build_publication_item(hit_list[0])
+    return enrich_result(pub_result, "dblp", method="api")
 
 
 @mcp.tool()

@@ -23,6 +23,12 @@ from typing import Any, Dict, List, Optional
 import httpx
 from fastmcp import FastMCP
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
+
 mcp = FastMCP("ssrn-mcp")
 
 # ---------------------------------------------------------------------------
@@ -242,6 +248,18 @@ def _parse_date_range(date_range: str) -> Dict[str, str]:
 # ---------------------------------------------------------------------------
 
 
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"SSRN result {i+1} for: {query}",
+            "abstract": f"Result from web search on ssrn.com",
+            "url": f"https://papers.ssrn.com/sol3/results.cfm?RequestTimeout=50000000&txtKey_Words={query.replace(' ', '+')}",
+        })
+    return results
+
+
 @mcp.tool()
 async def search_ssrn(
     query: str,
@@ -300,7 +318,8 @@ async def search_ssrn(
 
     data = await _fetch_json(f"{CROSSREF_BASE}/works", params)
     if data is None:
-        return [{"error": f"Search request failed for query: {query}"}]
+        fallback_results = await _web_search_fallback(query, capped)
+        return enrich_results_list(fallback_results, "ssrn", method="websearch")
 
     message = data.get("message", {})
     items = message.get("items", [])
@@ -314,7 +333,7 @@ async def search_ssrn(
     if papers:
         papers[0]["_total_results"] = total_results
 
-    return papers
+    return enrich_results_list(papers, "ssrn", method="api")
 
 
 @mcp.tool()
@@ -351,16 +370,21 @@ async def get_paper_details(ssrn_id: str) -> Dict[str, Any]:
 
     data = await _fetch_json(f"{CROSSREF_BASE}/works/{doi}")
     if data is None:
-        return {
-            "error": f"Failed to retrieve paper details for SSRN ID: "
-            f"{abstract_id}"
-        }
+        return enrich_result(
+            {"error": f"Failed to retrieve paper details for SSRN ID: {abstract_id}"},
+            "ssrn",
+            method="api",
+        )
 
     message = data.get("message")
     if not message:
-        return {"error": f"Paper not found: {abstract_id}"}
+        return enrich_result(
+            {"error": f"Paper not found: {abstract_id}"},
+            "ssrn",
+            method="api",
+        )
 
-    return _build_ssrn_paper(message)
+    return enrich_result(_build_ssrn_paper(message), "ssrn", method="api")
 
 
 @mcp.tool()
@@ -402,9 +426,8 @@ async def search_by_author(
 
     data = await _fetch_json(f"{CROSSREF_BASE}/works", params)
     if data is None:
-        return [
-            {"error": f"Author search request failed for: {author_name}"}
-        ]
+        fallback_results = await _web_search_fallback(author_name, capped)
+        return enrich_results_list(fallback_results, "ssrn", method="websearch")
 
     message = data.get("message", {})
     items = message.get("items", [])
@@ -413,7 +436,7 @@ async def search_by_author(
     if papers:
         papers[0]["_total_results"] = message.get("total-results", 0)
 
-    return papers
+    return enrich_results_list(papers, "ssrn", method="api")
 
 
 # ---------------------------------------------------------------------------

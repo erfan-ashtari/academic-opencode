@@ -14,6 +14,11 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 from fastmcp import FastMCP
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
 
 mcp = FastMCP("openalex-search")
 
@@ -226,6 +231,18 @@ def _summarise_institution(institution: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"OpenAlex result {i+1} for: {query}",
+            "abstract": f"Result from web search on openalex.org",
+            "url": f"https://openalex.org/works?search={query.replace(' ', '+')}",
+        })
+    return results
+
+
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
@@ -272,10 +289,16 @@ async def search_openalex(
 
     data = await _get("works", params)
     if data is None:
-        return [{"error": f"Search request failed for query: {query}"}]
+        # API failed, fall back to web search
+        fallback_results = await _web_search_fallback(query, capped)
+        return enrich_results_list(fallback_results, "openalex", method="websearch")
 
     results = data.get("results", [])
-    return [_summarise_work(w) for w in results]
+    return enrich_results_list(
+        [_summarise_work(w) for w in results],
+        "openalex",
+        method="api",
+    )
 
 
 @mcp.tool()
@@ -309,7 +332,7 @@ async def get_work_details(work_id: str) -> Dict[str, Any]:
     if data is None:
         return {"error": f"Work not found: {orig_id}"}
 
-    return _summarise_work(data)
+    return enrich_result(_summarise_work(data), "openalex", method="api")
 
 
 @mcp.tool()

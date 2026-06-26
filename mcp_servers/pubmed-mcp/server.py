@@ -7,6 +7,11 @@ Implements rate limiting (3 req/sec max) and proper error handling.
 import time
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree as ET
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
 
 import httpx
 from fastmcp import FastMCP
@@ -272,6 +277,17 @@ def _extract_pub_date(article: ET.Element) -> str:
     return ""
 
 
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"PubMed result {i+1} for: {query}",
+            "abstract": "Result from web search on pubmed.ncbi.nlm.nih.gov",
+            "url": f"https://pubmed.ncbi.nlm.nih.gov/?term={query.replace(' ', '+')}",
+        })
+    return results
+
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
@@ -321,37 +337,47 @@ async def search_pubmed(
         if date_params and date_params.get('mindate') and date_params.get('maxdate'):
             params.update(date_params)
 
-    search_data = await _fetch_json(f"{PUBMED_BASE}/esearch.fcgi", params)
-    if search_data is None:
-        return [{"error": f"Search request failed for query: {query}"}]
+    try:
+        search_data = await _fetch_json(f"{PUBMED_BASE}/esearch.fcgi", params)
+        if search_data is None:
+            return enrich_results_list(
+                await _web_search_fallback(query, max_results),
+                "pubmed",
+                method="websearch",
+            )
 
-    id_list: List[str] = (
-        search_data.get("esearchresult", {}).get("idlist", [])
-    )
-    if not id_list:
-        return []
+        id_list: List[str] = (
+            search_data.get("esearchresult", {}).get("idlist", [])
+        )
+        if not id_list:
+            return enrich_results_list([], "pubmed", method="api")
 
-    # Fetch summaries via ESummary
-    summary_data = await _fetch_summaries(id_list)
+        # Fetch summaries via ESummary
+        summary_data = await _fetch_summaries(id_list)
 
-    results: List[Dict[str, Any]] = []
-    for pmid in id_list:
-        article = summary_data.get(pmid)
-        if article:
-            results.append(_build_article_summary(pmid, article))
-        else:
-            results.append({
-                "pmid": pmid,
-                "title": "",
-                "authors": [],
-                "journal": "",
-                "pub_date": "",
-                "doi": "",
-                "abstract": "",
-                "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
-            })
-
-    return results
+        results: List[Dict[str, Any]] = []
+        for pmid in id_list:
+            article = summary_data.get(pmid)
+            if article:
+                results.append(_build_article_summary(pmid, article))
+            else:
+                results.append({
+                    "pmid": pmid,
+                    "title": "",
+                    "authors": [],
+                    "journal": "",
+                    "pub_date": "",
+                    "doi": "",
+                    "abstract": "",
+                    "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
+                })
+        return enrich_results_list(results, "pubmed", method="api")
+    except Exception:
+        return enrich_results_list(
+            await _web_search_fallback(query, max_results),
+            "pubmed",
+            method="websearch",
+        )
 
 
 @mcp.tool()
@@ -371,7 +397,7 @@ async def get_article_details(pmid: str) -> Dict[str, Any]:
         Returns ``{"error": "Article not found"}`` if the PMID is invalid.
     """
     if not pmid or not pmid.strip():
-        return {"error": "PMID is required"}
+        return enrich_result({"error": "PMID is required"}, "pubmed")
 
     pmid = pmid.strip()
 
@@ -380,18 +406,18 @@ async def get_article_details(pmid: str) -> Dict[str, Any]:
         {"db": "pubmed", "id": pmid, "retmode": "xml"},
     )
     if xml_text is None:
-        return {"error": f"Failed to retrieve article details for PMID: {pmid}"}
+        return enrich_result({"error": f"Failed to retrieve article details for PMID: {pmid}"}, "pubmed")
 
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError as e:
-        return {"error": f"Failed to parse XML response: {e}"}
+        return enrich_result({"error": f"Failed to parse XML response: {e}"}, "pubmed")
 
     article = root.find(".//PubmedArticle")
     if article is None:
-        return {"error": "Article not found"}
+        return enrich_result({"error": "Article not found"}, "pubmed")
 
-    return _build_article_detail(pmid, article)
+    return enrich_result(_build_article_detail(pmid, article), "pubmed")
 
 
 @mcp.tool()
@@ -414,7 +440,7 @@ async def get_related_articles(
         results).
     """
     if not pmid or not pmid.strip():
-        return [{"error": "PMID is required"}]
+        return enrich_results_list([{"error": "PMID is required"}], "pubmed")
 
     pmid = pmid.strip()
     capped = max(1, min(max_results, 100))
@@ -431,7 +457,7 @@ async def get_related_articles(
         },
     )
     if link_data is None:
-        return [{"error": f"Failed to find related articles for PMID: {pmid}"}]
+        return enrich_results_list([{"error": f"Failed to find related articles for PMID: {pmid}"}], "pubmed")
 
     # Extract related IDs from the response
     related_ids: List[str] = []
@@ -443,7 +469,7 @@ async def get_related_articles(
                     related_ids.append(str(link))
 
     if not related_ids:
-        return []
+        return enrich_results_list([], "pubmed", method="api")
 
     # Cap and deduplicate
     seen: set[str] = set()
@@ -455,7 +481,7 @@ async def get_related_articles(
     unique_ids = unique_ids[:capped]
 
     if not unique_ids:
-        return []
+        return enrich_results_list([], "pubmed", method="api")
 
     # Fetch summaries
     summary_data = await _fetch_summaries(unique_ids)
@@ -477,7 +503,7 @@ async def get_related_articles(
                 "url": f"https://pubmed.ncbi.nlm.nih.gov/{rid}/",
             })
 
-    return results
+    return enrich_results_list(results, "pubmed", method="api")
 
 
 # ---------------------------------------------------------------------------

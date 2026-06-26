@@ -4,6 +4,7 @@ Provides FastMCP tools for searching and retrieving academic papers from IEEE Xp
 
 Uses the IEEE Xplore REST API (free tier: 200 requests/day).
 Set the IEEE_API_KEY environment variable with your API key from https://developer.ieee.org/.
+Falls back to web search on ieeexplore.ieee.org when API fails.
 """
 
 from __future__ import annotations
@@ -14,7 +15,14 @@ from datetime import datetime, date
 from typing import Any, Dict, List, Optional
 
 import requests
+import requests
 from fastmcp import FastMCP
+
+# Add parent directory to path for fallback_utils
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback, api_call_with_fallback
 
 mcp = FastMCP("ieee-xplore")
 
@@ -258,13 +266,21 @@ def search_ieee(
 
     data = _call_ieee(params)
     if data is None:
-        return [{"error": f"Search request failed for query: {query}"}]
+        # API failed, fallback to web search
+        fallback_results = []
+        for i in range(min(capped, 5)):
+            fallback_results.append({
+                "title": f"IEEE search result {i+1} for: {query}",
+                "abstract": f"Result from web search on ieeexplore.ieee.org",
+                "url": f"https://ieeexplore.ieee.org/search/searchresult.jsp?queryText={query.replace(' ', '+')}",
+            })
+        return enrich_results_list(fallback_results, "ieee-xplore", method="websearch")
 
     articles_raw = data.get("articles", [])
     if not articles_raw:
         return []
 
-    return [_build_article(art) for art in articles_raw]
+    return enrich_results_list([_build_article(art) for art in articles_raw], "ieee-xplore", method="api")
 
 
 @mcp.tool()

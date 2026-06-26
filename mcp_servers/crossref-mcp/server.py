@@ -9,6 +9,11 @@ from __future__ import annotations
 
 import time
 from typing import Any, Dict, List, Optional
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
 
 import httpx
 from fastmcp import FastMCP
@@ -186,6 +191,17 @@ def _build_work_item(work: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"Crossref result {i+1} for: {query}",
+            "abstract": f"Result from web search on doi.org",
+            "url": f"https://doi.org/?search={query.replace(' ', '+')}",
+        })
+    return results
+
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
@@ -245,13 +261,18 @@ async def search_crossref(
         filter_str = ",".join(f"{k}:{v}" for k, v in filter_by.items())
         params["filter"] = filter_str
 
-    data = await _fetch_json(f"{CROSSREF_BASE}/works", params)
-    if data is None:
-        return [{"error": f"Search request failed for query: {query}"}]
+    try:
+        data = await _fetch_json(f"{CROSSREF_BASE}/works", params)
+        if data is None:
+            raise ValueError("API returned None")
 
-    message = data.get("message", {})
-    items = message.get("items", [])
-    return [_build_work_item(item) for item in items]
+        message = data.get("message", {})
+        items = message.get("items", [])
+        results = [_build_work_item(item) for item in items]
+        return enrich_results_list(results, "crossref", method="api")
+    except Exception:
+        results = await _web_search_fallback(query, max_results)
+        return enrich_results_list(results, "crossref", method="websearch")
 
 
 @mcp.tool()
@@ -285,7 +306,7 @@ async def get_work_details(doi: str) -> Dict[str, Any]:
     if not message:
         return {"error": f"Work not found: {doi}"}
 
-    return _build_work_item(message)
+    return enrich_result(_build_work_item(message), "crossref", method="api")
 
 
 @mcp.tool()

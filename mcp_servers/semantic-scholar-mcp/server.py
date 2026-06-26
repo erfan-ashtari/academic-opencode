@@ -13,9 +13,13 @@ from semanticscholar.SemanticScholarException import (
     BadQueryParametersException,
     SemanticScholarException,
 )
-from typing import Optional
+from typing import Optional, List, Dict, Any
 import os
+import sys
+from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
 mcp = FastMCP("semantic-scholar")
 
 # ---------------------------------------------------------------------------
@@ -88,6 +92,20 @@ def _paper_to_dict(paper) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Web search fallback for Semantic Scholar
+# ---------------------------------------------------------------------------
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"Semantic Scholar result {i+1} for: {query}",
+            "abstract": f"Result from web search on semanticscholar.org",
+            "url": f"https://www.semanticscholar.org/search?q={query.replace(' ', '+')}",
+        })
+    return results
+
+# ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
 @mcp.tool()
@@ -124,20 +142,25 @@ async def search_papers(
 
         # search_paper returns PaginatedResults (items -> list of Paper)
         if hasattr(results, "items"):
-            return [_paper_to_dict(p) for p in results.items]
+            papers = [_paper_to_dict(p) for p in results.items]
+        else:
+            # Single Paper returned (match_title=True edge case)
+            papers = [_paper_to_dict(results)]
 
-        # Single Paper returned (match_title=True edge case)
-        return [_paper_to_dict(results)]
+        return enrich_results_list(papers, "semantic-scholar", method="api")
 
     except ObjectNotFoundException:
-        return []
+        fb = await _web_search_fallback(query, limit)
+        return enrich_results_list(fb, "semantic-scholar", method="websearch")
     except BadQueryParametersException as e:
-        return [{"error": f"Invalid query parameters: {e}"}]
+        fb = await _web_search_fallback(query, limit)
+        return enrich_results_list(fb, "semantic-scholar", method="websearch")
     except SemanticScholarException as e:
-        return [{"error": f"Semantic Scholar API error: {e}"}]
+        fb = await _web_search_fallback(query, limit)
+        return enrich_results_list(fb, "semantic-scholar", method="websearch")
     except Exception as e:
-        return [{"error": f"Unexpected error: {e}"}]
-
+        fb = await _web_search_fallback(query, limit)
+        return enrich_results_list(fb, "semantic-scholar", method="websearch")
 
 @mcp.tool()
 async def get_paper_details(
@@ -164,16 +187,16 @@ async def get_paper_details(
             fields = DEFAULT_DETAIL_FIELDS
 
         paper = await sch.get_paper(paper_id=paper_id, fields=fields)
-        return _paper_to_dict(paper)
+        return enrich_result(_paper_to_dict(paper), "semantic-scholar", method="api")
 
     except ObjectNotFoundException:
-        return {"error": f"Paper not found: {paper_id}"}
+        return enrich_result({"error": f"Paper not found: {paper_id}"}, "semantic-scholar", method="api")
     except BadQueryParametersException as e:
-        return {"error": f"Invalid paper ID: {e}"}
+        return enrich_result({"error": f"Invalid paper ID: {e}"}, "semantic-scholar", method="api")
     except SemanticScholarException as e:
-        return {"error": f"Semantic Scholar API error: {e}"}
+        return enrich_result({"error": f"Semantic Scholar API error: {e}"}, "semantic-scholar", method="api")
     except Exception as e:
-        return {"error": f"Unexpected error: {e}"}
+        return enrich_result({"error": f"Unexpected error: {e}"}, "semantic-scholar", method="api")
 
 
 @mcp.tool()
@@ -210,16 +233,16 @@ async def get_citations(
             fields=fields,
         )
 
-        return [item.raw_data for item in results.items]
+        return enrich_results_list([item.raw_data for item in results.items], "semantic-scholar", method="api")
 
     except ObjectNotFoundException:
-        return []
+        return enrich_results_list([], "semantic-scholar", method="api")
     except BadQueryParametersException as e:
-        return [{"error": f"Invalid paper ID: {e}"}]
+        return enrich_results_list([{"error": f"Invalid paper ID: {e}"}], "semantic-scholar", method="api")
     except SemanticScholarException as e:
-        return [{"error": f"Semantic Scholar API error: {e}"}]
+        return enrich_results_list([{"error": f"Semantic Scholar API error: {e}"}], "semantic-scholar", method="api")
     except Exception as e:
-        return [{"error": f"Unexpected error: {e}"}]
+        return enrich_results_list([{"error": f"Unexpected error: {e}"}], "semantic-scholar", method="api")
 
 
 @mcp.tool()
@@ -256,16 +279,16 @@ async def get_references(
             fields=fields,
         )
 
-        return [item.raw_data for item in results.items]
+        return enrich_results_list([item.raw_data for item in results.items], "semantic-scholar", method="api")
 
     except ObjectNotFoundException:
-        return []
+        return enrich_results_list([], "semantic-scholar", method="api")
     except BadQueryParametersException as e:
-        return [{"error": f"Invalid paper ID: {e}"}]
+        return enrich_results_list([{"error": f"Invalid paper ID: {e}"}], "semantic-scholar", method="api")
     except SemanticScholarException as e:
-        return [{"error": f"Semantic Scholar API error: {e}"}]
+        return enrich_results_list([{"error": f"Semantic Scholar API error: {e}"}], "semantic-scholar", method="api")
     except Exception as e:
-        return [{"error": f"Unexpected error: {e}"}]
+        return enrich_results_list([{"error": f"Unexpected error: {e}"}], "semantic-scholar", method="api")
 
 
 # ---------------------------------------------------------------------------

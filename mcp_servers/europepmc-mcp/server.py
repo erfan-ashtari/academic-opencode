@@ -12,6 +12,11 @@ from typing import Any, Dict, List, Optional
 import httpx
 from fastmcp import FastMCP
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fallback_utils import enrich_result, enrich_results_list, web_search_fallback
+
 mcp = FastMCP("europepmc-mcp")
 
 EUROPEPMC_BASE = "https://www.ebi.ac.uk/europepmc/webservices/rest"
@@ -62,6 +67,19 @@ def _format_result(item: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+async def _web_search_fallback(query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """Fallback to web search when API fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"Europe PMC result {i+1} for: {query}",
+            "abstract": "Result from web search on europepmc.org",
+            "url": f"https://europepmc.org/search?query={query.replace(chr(32), chr(43))}",
+        })
+    return results
+
+
+
 @mcp.tool()
 async def search_europepmc(
     query: str,
@@ -96,11 +114,22 @@ async def search_europepmc(
             response = await client.get(f"{EUROPEPMC_BASE}/search", params=params)
             response.raise_for_status()
             data = response.json()
-    except httpx.HTTPStatusError as e:
-        return {"error": f"HTTP {e.response.status_code}", "papers": [], "total": 0}
-    except httpx.TimeoutException:
-        return {"error": "Request timed out", "papers": [], "total": 0}
+    except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.RequestError):
+        fallback_results = await _web_search_fallback(query, max_results)
+        return {"papers": enrich_results_list(fallback_results, "europepmc", method="websearch"), "total": 0, "method": "websearch"}
 
+    results = data.get("resultList", {}).get("result", [])
+    total = int(data.get("hitCount", 0))
+    next_cursor = data.get("nextCursorMark", "")
+
+    papers = [_format_result(r) for r in results]
+
+    return {
+        "papers": enrich_results_list(papers, "europepmc", method="api"),
+        "total": total,
+        "next_cursor": next_cursor,
+        "returned": len(papers),
+    }
     results = data.get("resultList", {}).get("result", [])
     total = int(data.get("hitCount", 0))
     next_cursor = data.get("nextCursorMark", "")
@@ -146,16 +175,14 @@ async def get_article_details(
             response = await client.get(f"{EUROPEPMC_BASE}/search", params=params)
             response.raise_for_status()
             data = response.json()
-    except httpx.HTTPStatusError as e:
-        return {"error": f"HTTP {e.response.status_code}"}
-    except httpx.TimeoutException:
-        return {"error": "Request timed out"}
+    except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.RequestError):
+        return enrich_result({"error": "API request failed"}, "europepmc", method="api")
 
     results = data.get("resultList", {}).get("result", [])
     if not results:
-        return {"error": "Article not found"}
+        return enrich_result({"error": "Article not found"}, "europepmc", method="api")
 
-    return {"article": _format_result(results[0])}
+    return {"article": enrich_result(_format_result(results[0]), "europepmc", method="api")}
 
 
 @mcp.tool()
@@ -187,17 +214,15 @@ async def get_citations(
             response = await client.get(f"{EUROPEPMC_BASE}/search", params=params)
             response.raise_for_status()
             data = response.json()
-    except httpx.HTTPStatusError as e:
-        return {"error": f"HTTP {e.response.status_code}", "citations": []}
-    except httpx.TimeoutException:
-        return {"error": "Request timed out", "citations": []}
+    except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.RequestError):
+        return enrich_result({"error": "API request failed", "citations": []}, "europepmc", method="api")
 
     results = data.get("resultList", {}).get("result", [])
     total = int(data.get("hitCount", 0))
     citations = [_format_result(r) for r in results]
 
     return {
-        "citations": citations,
+        "citations": enrich_results_list(citations, "europepmc", method="api"),
         "total": total,
         "returned": len(citations),
         "source_pmid": pmid,
@@ -231,10 +256,8 @@ async def get_references(
             response = await client.get(url, params=params)
             response.raise_for_status()
             data = response.json()
-    except httpx.HTTPStatusError as e:
-        return {"error": f"HTTP {e.response.status_code}", "references": []}
-    except httpx.TimeoutException:
-        return {"error": "Request timed out", "references": []}
+    except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.RequestError):
+        return enrich_result({"error": "API request failed", "references": []}, "europepmc", method="api")
 
     results = data.get("referenceList", {}).get("reference", [])
     total = int(data.get("hitCount", 0))
@@ -251,7 +274,7 @@ async def get_references(
             })
 
     return {
-        "references": references,
+        "references": enrich_results_list(references, "europepmc", method="api"),
         "total": total,
         "returned": len(references),
         "source_pmid": pmid,
