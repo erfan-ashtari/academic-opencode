@@ -8,6 +8,7 @@ via the OpenAlex API (free, no API key required).
 from __future__ import annotations
 
 import asyncio
+import os
 import time
 from typing import Any, Dict, List, Optional
 
@@ -26,6 +27,9 @@ OPENALEX_BASE = "https://api.openalex.org"
 _RATE_LIMIT_INTERVAL = 0.11
 _last_request_time: float = 0.0
 _lock = asyncio.Lock()
+
+# Polite pool email (recommended for higher rate limits)
+_POLITE_EMAIL = os.getenv("OPENALEX_EMAIL", "")
 
 # Default field selections (OpenAlex returns everything by default,
 # but we can hint at what we care about via select= parameter).
@@ -74,6 +78,9 @@ async def _get(endpoint: str, params: Dict[str, str]) -> Optional[Dict[str, Any]
     """Rate-limited GET request to OpenAlex API returning parsed JSON."""
     await _rate_limit()
     url = f"{OPENALEX_BASE}/{endpoint}"
+    # Add polite pool email if configured
+    if _POLITE_EMAIL:
+        params["mailto"] = _POLITE_EMAIL
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(url, params=params)

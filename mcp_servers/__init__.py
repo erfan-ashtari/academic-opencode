@@ -16,7 +16,7 @@ import os
 import sys
 from typing import Optional, Sequence
 
-_MCP_SERVERS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mcp-servers")
+_MCP_SERVERS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mcp_servers")
 
 
 class _HyphenBridgeFinder(importlib.abc.MetaPathFinder):

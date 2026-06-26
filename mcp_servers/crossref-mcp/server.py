@@ -73,7 +73,9 @@ def _format_date(date_parts: Optional[List[List[int]]]) -> Optional[str]:
     """
     if not date_parts or not date_parts[0]:
         return None
-    parts = date_parts[0]
+    parts = [p for p in date_parts[0] if p is not None]
+    if not parts:
+        return None
     if len(parts) >= 3:
         return f"{parts[0]:04d}-{parts[1]:02d}-{parts[2]:02d}"
     if len(parts) == 2:

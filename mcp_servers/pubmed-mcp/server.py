@@ -318,7 +318,7 @@ async def search_pubmed(
 
     if date_range:
         date_params = _parse_date_range(date_range)
-        if date_params:
+        if date_params and date_params.get('mindate') and date_params.get('maxdate'):
             params.update(date_params)
 
     search_data = await _fetch_json(f"{PUBMED_BASE}/esearch.fcgi", params)
