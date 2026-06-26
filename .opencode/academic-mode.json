@@ -1,3 +1,5 @@
 {
-  "academic_mode": false
+  "academic_mode": true,
+  "auto_detect": true,
+  "description": "Academic tools are auto-detected based on query intent. No manual toggle needed."
 }

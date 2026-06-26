@@ -98,7 +98,6 @@ This is an academic research workspace powered by OpenCode + oh-my-openagent wit
 | `/explain-paper` | Plain-language explanation |
 | `/convert-document` | PDF/DOCX → Markdown |
 | `/convert-batch` | Batch document conversion |
-
 ## Communication Style
 
 - Be concise and academic in tone
@@ -106,17 +105,77 @@ This is an academic research workspace powered by OpenCode + oh-my-openagent wit
 - Distinguish between established facts and speculation
 - Note when results need human verification (especially Google Scholar)
 
-## Academic Mode
+## Academic Mode (Auto-Detected)
 
-Toggle automatic academic tool usage:
+Academic tools are **automatically detected** based on query intent. No manual toggle needed.
 
-```bash
-/academic-mode on    # Enable (default for research tasks)
-/academic-mode off   # Disable (standard dev workflow)
-```
+### Auto-Spawning Rules
 
-When ON: all research/writing/citation tasks auto-route to academic tools.
-When OFF: academic tools only used when explicitly requested.
+When the query matches an academic intent, **automatically spawn the specialized subagent** with the appropriate skills loaded.
+
+| Intent Pattern | Spawn Agent | Load Skills |
+|----------------|-------------|-------------|
+| "search for papers", "find research", "look up studies" | `research-agent` | `["paper-search"]` |
+| "review literature", "systematic review", "survey papers" | `review-agent` | `["literature-review", "paper-search"]` |
+| "write paper", "draft section", "abstract", "introduction" | `writing-agent` | `["paper-writing", "citation-manager"]` |
+| "format citation", "bibliography", "reference list" | `Sisyphus-Junior` | `["citation-manager"]` |
+| "compose email", "send to professor", "submission email" | `Sisyphus-Junior` | `["email-composer"]` |
+| "review paper", "critique", "evaluate methodology" | `review-agent` | `["paper-review"]` |
+| "explain paper", "summarize findings", "break down" | `Sisyphus-Junior` | `["paper-review"]` |
+| "convert PDF", "extract text", "parse document" | `Sisyphus-Junior` | `["document-converter"]` |
+| "find LaTeX template", "format paper" | `Sisyphus-Junior` | `["latex-assistant"]` |
+| Any query with DOI (10.xxxx/xxxxx) | `research-agent` | `["paper-search", "citation-manager"]` |
+| Any query mentioning specific paper titles | `research-agent` | `["paper-search"]` |
+
+### Auto-Skill Loading Rules
+
+Even without spawning a new agent, **load relevant skills** when the query contains:
+
+| Query Contains | Load Skill |
+|----------------|------------|
+| paper, research, study, publication | `paper-search` |
+| citation, reference, bibliography, DOI | `citation-manager` |
+| review, critique, methodology | `paper-review` |
+| write, draft, abstract, introduction, conclusion | `paper-writing` |
+| email, professor, submission, collaboration | `email-composer` |
+| PDF, convert, extract, document | `document-converter` |
+| LaTeX, template, journal, conference | `latex-assistant` |
+| literature, survey, systematic, PRISMA | `literature-review` |
+
+### When NOT to Use Academic Tools
+
+Standard dev workflow (no academic routing):
+- "fix this bug", "debug the error"
+- "refactor this function"
+- "write a test"
+- "deploy to production"
+- Pure code-related queries with no research intent
+
+### Example Auto-Responses
+
+**User:** "find recent papers on transformer attention"
+
+**Agent should:**
+1. Detect intent: paper search
+2. Spawn: `research-agent`
+3. Load skills: `["paper-search"]`
+4. Execute: parallel search across arXiv, Semantic Scholar, IEEE
+
+**User:** "write an introduction for my paper on face recognition"
+
+**Agent should:**
+1. Detect intent: paper writing
+2. Spawn: `writing-agent`
+3. Load skills: `["paper-writing", "citation-manager"]`
+4. Execute: draft introduction with citations
+
+**User:** "review this paper: 10.1234/5678"
+
+**Agent should:**
+1. Detect intent: paper review + DOI present
+2. Spawn: `review-agent`
+3. Load skills: `["paper-review", "paper-search"]`
+4. Execute: fetch paper, provide structured review
 
 ## Environment
 
