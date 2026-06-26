@@ -10,6 +10,7 @@ build/
 
 # OpenCode
 .opencode/background-tasks.json
+.opencode/node_modules/
 .opencode/skills/*/node_modules/
 
 # Dependencies
