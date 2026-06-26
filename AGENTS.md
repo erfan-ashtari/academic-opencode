@@ -110,7 +110,6 @@ This is an academic research workspace powered by OpenCode + oh-my-openagent wit
 
 - Platform: Windows
 - Shell: PowerShell
-- Working Directory: E:\project\academic-research-assistant\first_academic_project
 - Python: Required for MCP servers
 - API Keys: Set in `.env` (Zotero, etc.)
 
