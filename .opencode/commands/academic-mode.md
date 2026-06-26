@@ -29,7 +29,7 @@ Toggle academic mode to control whether academic tools are used automatically.
 
 ## Configuration
 
-Updates `academic_mode` in `opencode.json`:
+Updates `.opencode/academic-mode.json`:
 ```json
 {
   "academic_mode": true

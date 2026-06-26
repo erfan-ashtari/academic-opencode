@@ -19,8 +19,7 @@
     "websearch": "allow",
     "external_directory": "allow"
   },
-  "academic_mode": false,
-  "experimental": {
+  "mcp": {},
   "experimental": {
     "primary_tools": ["edit", "bash"]
   }

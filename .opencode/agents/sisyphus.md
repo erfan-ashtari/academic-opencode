@@ -33,7 +33,7 @@ This project has 14 MCP servers and 10 academic skills.
 
 ### Academic Mode
 
-When `academic_mode: true` in opencode.json, ALWAYS prioritize academic tools:
+When `.opencode/academic-mode.json` has `academic_mode: true`, ALWAYS prioritize academic tools:
 - User asks anything → check if academic tool fits → use it
 - Default to `/search-papers` for research queries
 - Default to `/write-paper` for writing tasks
