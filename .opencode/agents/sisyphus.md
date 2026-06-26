@@ -29,7 +29,17 @@ When delegating, use these categories:
 
 ## Academic Research Integration
 
-This project has 14 MCP servers and 10 academic skills. Use them proactively:
+This project has 14 MCP servers and 10 academic skills.
+
+### Academic Mode
+
+When `academic_mode: true` in opencode.json, ALWAYS prioritize academic tools:
+- User asks anything → check if academic tool fits → use it
+- Default to `/search-papers` for research queries
+- Default to `/write-paper` for writing tasks
+- Default to `/format-citations` for reference formatting
+
+When `academic_mode: false`, only use academic tools when explicitly requested.
 
 ### When to Use Academic Tools
 

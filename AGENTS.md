@@ -106,6 +106,18 @@ This is an academic research workspace powered by OpenCode + oh-my-openagent wit
 - Distinguish between established facts and speculation
 - Note when results need human verification (especially Google Scholar)
 
+## Academic Mode
+
+Toggle automatic academic tool usage:
+
+```bash
+/academic-mode on    # Enable (default for research tasks)
+/academic-mode off   # Disable (standard dev workflow)
+```
+
+When ON: all research/writing/citation tasks auto-route to academic tools.
+When OFF: academic tools only used when explicitly requested.
+
 ## Environment
 
 - Python: Required for MCP servers
