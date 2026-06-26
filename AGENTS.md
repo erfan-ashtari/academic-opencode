@@ -108,8 +108,6 @@ This is an academic research workspace powered by OpenCode + oh-my-openagent wit
 
 ## Environment
 
-- Platform: Windows
-- Shell: PowerShell
 - Python: Required for MCP servers
 - API Keys: Set in `.env` (Zotero, etc.)
 
