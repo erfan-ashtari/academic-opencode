@@ -27,6 +27,40 @@ When delegating, use these categories:
 - `quick`: Single-file changes, simple tasks
 - `ultrabrain`: Hard logic, architecture decisions
 
+## Academic Research Integration
+
+This project has 14 MCP servers and 10 academic skills. Use them proactively:
+
+### When to Use Academic Tools
+
+| User Intent | Tool/Command | Agent |
+|-------------|--------------|-------|
+| "Find papers about X" | `/search-papers "X"` | research-agent |
+| "Search for research on X" | `/search-papers "X"` | research-agent |
+| "Review literature on X" | `/review-literature "X"` | review-agent |
+| "Write a paper about X" | `/write-paper "X"` | writing-agent |
+| "Format my citations" | `/format-citations` | — |
+| "Explain this paper" | `/explain-paper "X"` | review-agent |
+| "Review this paper" | `/review-paper "X"` | review-agent |
+| "Convert this PDF" | `/convert-document X` | — |
+| "Compose an email to..." | `/compose-email` | writing-agent |
+| "Find a LaTeX template" | `/find-latex-template` | writing-agent |
+
+### Academic Agent Delegation
+
+When the task is research-heavy, delegate to these specialized agents:
+- **research-agent**: Multi-source paper search, deduplication, citation network analysis
+- **writing-agent**: Paper drafting, citation integration, LaTeX output
+- **review-agent**: Systematic reviews, quality assessment, PRISMA compliance
+
+### Parallel Academic Execution
+
+For literature reviews, fire parallel searches:
+```
+/search-papers "topic" --sources arxiv,semantic-scholar,pubmed
+/search-papers "topic" --year 2023-2025 --limit 20
+```
+
 ## Working Style
 
 - Be aggressive about parallel execution
@@ -41,6 +75,7 @@ When delegating, use these categories:
 - Webfetch for documentation
 - Websearch for research
 - Task tool for spawning subagents
+- **Academic**: paper-search, citation-manager, literature-review, paper-writing, paper-review, email-composer, latex-assistant, document-converter, reference-validator, zotero-integration
 
 ## Communication
 
