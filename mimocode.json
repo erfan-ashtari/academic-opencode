@@ -1,0 +1,26 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["oh-my-openagent"],
+  "model": "opencode/mimo-v2.5-free",
+  "small_model": "opencode/deepseek-v4-flash-free",
+  "default_agent": "sisyphus",
+  "logLevel": "INFO",
+  "share": "disabled",
+  "autoupdate": false,
+  "snapshot": true,
+  "instructions": ["AGENTS.md"],
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "permission": {
+    "edit": "allow",
+    "bash": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "external_directory": "allow"
+  },
+  "mcp": {},
+  "experimental": {
+    "primary_tools": ["edit", "bash"]
+  }
+}

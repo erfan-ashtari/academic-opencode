@@ -2,6 +2,7 @@
 .env
 *.log
 node_modules/
+.mimocode/node_modules/
 dist/
 build/
 .cache/
