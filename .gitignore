@@ -1,0 +1,32 @@
+# oh-my-openagent
+.env
+*.log
+node_modules/
+dist/
+build/
+.cache/
+.turbo/
+*.tsbuildinfo
+
+# OpenCode
+.opencode/background-tasks.json
+.opencode/skills/*/node_modules/
+
+# Dependencies
+bun.lock
+bun.lockb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+temp/
+*.tmp

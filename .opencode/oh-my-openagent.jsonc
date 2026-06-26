@@ -1,0 +1,115 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
+
+  "agents": {
+    "sisyphus": {
+      "model": "opencode/mimo-v2.5-free",
+      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
+      "temperature": 0.7,
+      "permission": { "edit": "allow", "bash": "allow", "webfetch": "allow" }
+    },
+    "hephaestus": {
+      "model": "opencode/mimo-v2.5-free",
+      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
+      "temperature": 0.7
+    },
+    "prometheus": {
+      "model": "opencode/mimo-v2.5-free",
+      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
+      "temperature": 0.7
+    },
+    "oracle": {
+      "model": "opencode/mimo-v2.5-free",
+      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
+      "temperature": 0.7
+    },
+    "librarian": {
+      "model": "opencode/deepseek-v4-flash-free",
+      "fallback_models": ["opencode/mimo-v2.5-free"]
+    },
+    "explore": {
+      "model": "opencode/deepseek-v4-flash-free",
+      "fallback_models": ["opencode/mimo-v2.5-free"]
+    },
+    "multimodal-looker": {
+      "model": "opencode/mimo-v2.5-free",
+      "fallback_models": ["opencode/big-pickle"]
+    },
+    "metis": {
+      "model": "opencode/mimo-v2.5-free",
+      "fallback_models": ["opencode/deepseek-v4-flash-free"]
+    },
+    "momus": {
+      "model": "opencode/mimo-v2.5-free",
+      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"]
+    },
+    "atlas": {
+      "model": "opencode/mimo-v2.5-free",
+      "fallback_models": ["opencode/deepseek-v4-flash-free"]
+    }
+  },
+
+  "categories": {
+    "quick": { "model": "opencode/deepseek-v4-flash-free" },
+    "unspecified-low": { "model": "opencode/mimo-v2.5-free" },
+    "unspecified-high": { "model": "opencode/mimo-v2.5-free" },
+    "visual-engineering": { "model": "opencode/mimo-v2.5-free" },
+    "deep": { "model": "opencode/big-pickle" },
+    "ultrabrain": { "model": "opencode/big-pickle" },
+    "writing": { "model": "opencode/mimo-v2.5-free" },
+    "artistry": { "model": "opencode/mimo-v2.5-free" }
+  },
+
+  "disabled_agents": [],
+  "disabled_skills": [],
+  "disabled_hooks": [],
+  "disabled_commands": [],
+  "disabled_mcps": [],
+  "disabled_tools": [],
+  "disabled_providers": [],
+
+  "background_task": {
+    "defaultConcurrency": 3,
+    "providerConcurrency": { "opencode": 3 }
+  },
+
+  "team_mode": {
+    "enabled": true,
+    "max_parallel_members": 4,
+    "tmux_visualization": false
+  },
+
+  "runtime_fallback": {
+    "enabled": true,
+    "retry_on_errors": [429, 500, 502, 503, 504],
+    "max_fallback_attempts": 3,
+    "timeout_seconds": 30
+  },
+
+  "hashline_edit": true,
+
+  "sisyphus_agent": {
+    "planner_enabled": true,
+    "replace_plan": true
+  },
+
+  "skills": {
+    "disable": [],
+    "sources": [
+      { "path": "./.opencode/skills", "recursive": true },
+      { "path": "../skills", "recursive": true }
+    ]
+  },
+
+  "git_master": {
+    "commit_footer": true,
+    "include_co_authored_by": true
+  },
+
+  "comment_checker": {},
+
+  "experimental": {
+    "task_system": true,
+    "aggressive_truncation": false
+  }
+}

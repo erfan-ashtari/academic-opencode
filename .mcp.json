@@ -1,0 +1,79 @@
+{
+  "mcpServers": {
+    "codegraph": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@colbymchenry/codegraph", "serve", "--mcp"]
+    },
+    "arxiv": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/arxiv-mcp/server.py"]
+    },
+    "semantic-scholar": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/semantic-scholar-mcp/server.py"]
+    },
+    "pubmed": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/pubmed-mcp/server.py"]
+    },
+    "zotero": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/zotero-mcp/server.py"]
+    },
+    "ieee-xplore": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/ieee-xplore-mcp/server.py"]
+    },
+    "acm-dl": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/acm-dl-mcp/server.py"]
+    },
+    "openalex": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/openalex-mcp/server.py"]
+    },
+    "crossref": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/crossref-mcp/server.py"]
+    },
+    "ssrn": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/ssrn-mcp/server.py"]
+    },
+    "dblp": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/dblp-mcp/server.py"]
+    },
+    "biorxiv": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/biorxiv-mcp/server.py"]
+    },
+    "europepmc": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/europepmc-mcp/server.py"]
+    },
+    "google-scholar": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/google-scholar-mcp/server.py"]
+    },
+    "document-converter": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["../mcp_servers/document-converter/server.py"]
+    }
+  }
+}
