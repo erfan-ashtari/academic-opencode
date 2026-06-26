@@ -96,8 +96,7 @@
   "skills": {
     "disable": [],
     "sources": [
-      { "path": "./.opencode/skills", "recursive": true },
-      { "path": "../skills", "recursive": true }
+      { "path": "./.opencode/skills", "recursive": true }
     ]
   },
 

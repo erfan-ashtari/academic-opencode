@@ -1,0 +1,177 @@
+\documentclass[12pt]{report}
+
+% Encoding
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+% Math
+\usepackage{amsmath,amssymb,amsthm}
+
+% Graphics
+\usepackage{graphicx}
+
+% Tables
+\usepackage{booktabs,tabularx}
+
+% Colors
+\usepackage{xcolor}
+
+% Hyperlinks
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+% Bibliography
+\usepackage{natbib}
+
+% Layout
+\usepackage[margin=1.5in]{geometry}
+
+% Line spacing
+\usepackage{setspace}
+\onehalfspacing
+
+% Chapters
+\usepackage{titlesec}
+
+% Title page
+\title{Thesis Title}
+\author{Author Name}
+\date{\today}
+
+\begin{document}
+
+% Title page
+\maketitle
+\thispagestyle{empty}
+\clearpage
+
+% Abstract
+\begin{abstract}
+% 150-350 words summarizing the entire thesis
+
+Your abstract here.
+
+\end{abstract}
+
+% Acknowledgments
+\chapter*{Acknowledgments}
+\addcontentsline{toc}{chapter}{Acknowledgments}
+
+Thank your supporters here.
+
+% Table of contents
+\tableofcontents
+\listoffigures
+\listoftables
+
+% Chapter 1: Introduction
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Background}
+\label{sec:background}
+
+% Context and problem
+
+\section{Problem Statement}
+\label{sec:problem}
+
+% Define the research problem
+
+\section{Research Questions}
+\label{sec:questions}
+
+% List research questions:
+% 1. RQ1
+% 2. RQ2
+% 3. RQ3
+
+\section{Contributions}
+\label{sec:contributions}
+
+% List contributions
+
+\section{Thesis Organization}
+\label{sec:organization}
+
+% Chapter overview
+
+% Chapter 2: Literature Review
+\chapter{Literature Review}
+\label{ch:literature}
+
+\section{Topic Area 1}
+\label{sec:topic1}
+
+% Review relevant work
+
+\section{Topic Area 2}
+\label{sec:topic2}
+
+% Review relevant work
+
+\section{Summary and Gaps}
+\label{sec:gaps}
+
+% Identify gaps in literature
+
+% Chapter 3: Methodology
+\chapter{Methodology}
+\label{ch:methodology}
+
+\section{Research Design}
+\label{sec:design}
+
+% Overall approach
+
+\section{Data Collection}
+\label{sec:collection}
+
+% How data was gathered
+
+\section{Analysis Methods}
+\label{sec:analysis}
+
+% How data was analyzed
+
+% Chapter 4-N: Results chapters
+\chapter{Results}
+\label{ch:results}
+
+% Present findings
+
+% Chapter N+1: Discussion
+\chapter{Discussion}
+\label{ch:discussion}
+
+\section{Interpretation of Findings}
+\label{sec:interpretation}
+
+\section{Implications}
+\label{sec:implications}
+
+\section{Limitations}
+\label{sec:limitations}
+
+\section{Future Work}
+\label{sec:future}
+
+% Final chapter: Conclusion
+\chapter{Conclusion}
+\label{ch:conclusion}
+
+% Summary of contributions
+% Key findings
+% Impact
+
+% Bibliography
+\bibliographystyle{plain}
+\bibliography{references}
+
+% Appendices
+\appendix
+\chapter{Supplementary Materials}
+\label{app:supplementary}
+
+% Additional materials
+
+\end{document}

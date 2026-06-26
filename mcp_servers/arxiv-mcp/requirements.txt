@@ -1,0 +1,3 @@
+# arXiv MCP Server dependencies
+arxiv==2.1.0
+fastmcp==0.1.0

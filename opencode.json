@@ -10,7 +10,7 @@
   "snapshot": true,
   "instructions": ["AGENTS.md"],
   "skills": {
-    "paths": [".opencode/skills", "../skills"]
+    "paths": [".opencode/skills"]
   },
   "permission": {
     "edit": "allow",
