@@ -1,7 +1,7 @@
 ---
 description: Vision and multimodal specialist. Analyzes images, PDFs, screenshots, and visual content.
 mode: subagent
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

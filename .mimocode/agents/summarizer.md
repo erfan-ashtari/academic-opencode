@@ -2,7 +2,7 @@
 name: summarizer
 description: Paper summarization specialist for quick understanding, journal club prep, and annotated bibliographies. Use when reading papers quickly, screening for relevance, or building reading lists.
 mode: subagent
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

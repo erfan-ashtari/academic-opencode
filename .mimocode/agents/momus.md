@@ -1,7 +1,7 @@
 ---
 description: High-accuracy verification reviewer. Provides detailed code review with focus on correctness.
 mode: subagent
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

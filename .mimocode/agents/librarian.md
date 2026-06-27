@@ -1,7 +1,7 @@
 ---
 description: External docs and code search specialist. Finds documentation, examples, and reference implementations.
 mode: subagent
-model: opencode/deepseek-v4-flash-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

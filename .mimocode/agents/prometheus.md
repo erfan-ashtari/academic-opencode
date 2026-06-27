@@ -1,7 +1,7 @@
 ---
 description: Strategic planner. Interviews before coding, identifies scope, and builds detailed plans.
 mode: subagent
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

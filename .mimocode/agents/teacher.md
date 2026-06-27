@@ -2,7 +2,7 @@
 name: teacher
 description: Academic tutor for explaining concepts, exam prep, and building foundational knowledge. Use when learning subjects, understanding complex theories, or preparing for comprehensive exams.
 mode: subagent
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

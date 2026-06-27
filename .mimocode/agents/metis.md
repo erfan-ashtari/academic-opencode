@@ -1,7 +1,7 @@
 ---
 description: Pre-planning consultant. Reviews plans and provides feedback before execution.
 mode: subagent
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

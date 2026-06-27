@@ -1,7 +1,7 @@
 ---
 description: Autonomous deep worker. Explores codebase, researches patterns, and executes end-to-end without hand-holding.
 mode: subagent
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

@@ -1,7 +1,7 @@
 ---
 description: Main orchestrator agent. Plans, delegates to specialists, and drives tasks to completion with aggressive parallel execution.
 mode: primary
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

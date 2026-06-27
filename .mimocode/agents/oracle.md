@@ -1,7 +1,7 @@
 ---
 description: Architecture and debugging consultant. Provides expert guidance on complex technical issues.
 mode: subagent
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

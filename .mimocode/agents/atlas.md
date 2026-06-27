@@ -1,7 +1,7 @@
 ---
 description: Todo-list orchestrator. Manages task lists and tracks progress.
 mode: primary
-model: opencode/mimo-v2.5-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow

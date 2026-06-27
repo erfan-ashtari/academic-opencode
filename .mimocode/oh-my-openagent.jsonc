@@ -3,61 +3,51 @@
 
   "agents": {
     "sisyphus": {
-      "model": "opencode/mimo-v2.5-free",
-      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
+      "model": "mimo/mimo-auto",
       "temperature": 0.7,
       "permission": { "edit": "allow", "bash": "allow", "webfetch": "allow" }
     },
     "hephaestus": {
-      "model": "opencode/mimo-v2.5-free",
-      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
+      "model": "mimo/mimo-auto",
       "temperature": 0.7
     },
     "prometheus": {
-      "model": "opencode/mimo-v2.5-free",
-      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
+      "model": "mimo/mimo-auto",
       "temperature": 0.7
     },
     "oracle": {
-      "model": "opencode/mimo-v2.5-free",
-      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
+      "model": "mimo/mimo-auto",
       "temperature": 0.7
     },
     "librarian": {
-      "model": "opencode/deepseek-v4-flash-free",
-      "fallback_models": ["opencode/mimo-v2.5-free"]
+      "model": "mimo/mimo-auto",
     },
     "explore": {
-      "model": "opencode/deepseek-v4-flash-free",
-      "fallback_models": ["opencode/mimo-v2.5-free"]
+      "model": "mimo/mimo-auto",
     },
     "multimodal-looker": {
-      "model": "opencode/mimo-v2.5-free",
-      "fallback_models": ["opencode/big-pickle"]
+      "model": "mimo/mimo-auto",
     },
     "metis": {
-      "model": "opencode/mimo-v2.5-free",
-      "fallback_models": ["opencode/deepseek-v4-flash-free"]
+      "model": "mimo/mimo-auto",
     },
     "momus": {
-      "model": "opencode/mimo-v2.5-free",
-      "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"]
+      "model": "mimo/mimo-auto",
     },
     "atlas": {
-      "model": "opencode/mimo-v2.5-free",
-      "fallback_models": ["opencode/deepseek-v4-flash-free"]
+      "model": "mimo/mimo-auto",
     }
   },
 
   "categories": {
-    "quick": { "model": "opencode/deepseek-v4-flash-free" },
-    "unspecified-low": { "model": "opencode/mimo-v2.5-free" },
-    "unspecified-high": { "model": "opencode/mimo-v2.5-free" },
-    "visual-engineering": { "model": "opencode/mimo-v2.5-free" },
-    "deep": { "model": "opencode/big-pickle" },
-    "ultrabrain": { "model": "opencode/big-pickle" },
-    "writing": { "model": "opencode/mimo-v2.5-free" },
-    "artistry": { "model": "opencode/mimo-v2.5-free" }
+    "quick": { "model": "mimo/mimo-auto" },
+    "unspecified-low": { "model": "mimo/mimo-auto" },
+    "unspecified-high": { "model": "mimo/mimo-auto" },
+    "visual-engineering": { "model": "mimo/mimo-auto" },
+    "deep": { "model": "mimo/mimo-auto" },
+    "ultrabrain": { "model": "mimo/mimo-auto" },
+    "writing": { "model": "mimo/mimo-auto" },
+    "artistry": { "model": "mimo/mimo-auto" }
   },
 
   "disabled_agents": [],
@@ -70,7 +60,7 @@
 
   "background_task": {
     "defaultConcurrency": 3,
-    "providerConcurrency": { "opencode": 3 }
+    "providerConcurrency": { "mimocode": 3 }
   },
 
   "team_mode": {
@@ -96,7 +86,7 @@
   "skills": {
     "disable": [],
     "sources": [
-      { "path": "./.opencode/skills", "recursive": true }
+      { "path": "./.mimocode/skills", "recursive": true }
     ]
   },
 

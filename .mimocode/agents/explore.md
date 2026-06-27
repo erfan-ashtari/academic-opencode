@@ -1,7 +1,7 @@
 ---
 description: Fast codebase grep. Quickly finds files, patterns, and code structures.
 mode: subagent
-model: opencode/deepseek-v4-flash-free
+model: mimo/mimo-auto
 permission:
   edit: allow
   bash: allow
