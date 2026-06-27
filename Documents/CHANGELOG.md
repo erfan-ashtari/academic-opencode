@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.3.1] - 2026-06-27
+
+### Removed
+
+- `ACADEMIC-AUDIT-PLAN.md` — development artifact
+- `ACADEMIC-REFERENCE.md` — consolidated into AGENTS.md
+- `CLAUDE.md` — consolidated into AGENTS.md
+- `IMPLEMENTATION-COMPLETE.md` — development artifact
+- `IMPLEMENTATION-PLAN.md` — development artifact
+
+## [0.3.0] - 2026-06-27
+
+### Added
+
+#### Consolidated Documentation
+- Single comprehensive `AGENTS.md` replacing:
+  - `ACADEMIC-REFERENCE.md` (434 lines)
+  - `CLAUDE.md` (98 lines)
+  - `AGENTS.md` (193 lines)
+- New 356-line reference covering all academic capabilities
+
+### Changed
+
+- Updated MCP server configurations (opencode.json, mimocode.json)
+- Added `.gitignore` entries for Python `__pycache__` directories
+- Removed tracked `.pyc` files from git
+
+### Fixed
+
+- Added missing `if __name__ == "__main__": mcp.run()` blocks to europepmc and google-scholar servers
+- Fixed syntax error in google-scholar `__init__.py`
+- Added `__init__.py` to scopus-mcp and acl-anthology-mcp directories
+
 ## [0.2.0] - 2026-06-27
 
 ### Added

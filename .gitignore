@@ -38,3 +38,6 @@ temp/
 __pycache__/
 *.pyc
 *.pyo
+
+# Documents
+Documents/extra-docs/
