@@ -279,3 +279,7 @@ async def get_references(
         "returned": len(references),
         "source_pmid": pmid,
     }
+
+
+if __name__ == "__main__":
+    mcp.run()

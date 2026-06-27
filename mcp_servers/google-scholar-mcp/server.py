@@ -222,3 +222,7 @@ async def get_author_papers(
         }
     except Exception as e:
         return {"error": str(e), "papers": [], "warning": SCHOLAR_WARNING}
+
+
+if __name__ == "__main__":
+    mcp.run()

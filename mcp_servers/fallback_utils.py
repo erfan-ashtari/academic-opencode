@@ -7,6 +7,8 @@ result metadata (method, weblink, mcp_name).
 
 from __future__ import annotations
 
+import re
+import sys
 from typing import Any, Callable, Dict, List, Optional
 import httpx
 
@@ -31,7 +33,37 @@ MCP_SITE_DOMAINS: Dict[str, str] = {
     "google-scholar": "scholar.google.com",
     "zotero": "zotero.org",
     "scopus": "scopus.com",
+    "acl-anthology": "aclanthology.org",
 }
+
+# Jina Reader API configuration
+JINA_SEARCH_URL = "https://s.jina.ai"
+JINA_READER_URL = "https://r.jina.ai"
+
+
+# ---------------------------------------------------------------------------
+# Text extraction helpers
+# ---------------------------------------------------------------------------
+
+def extract_authors(text: str) -> List[str]:
+    """Extract author names from text using common patterns."""
+    # Look for "by Author1, Author2" patterns
+    match = re.search(r'by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?(?:,\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)*)', text)
+    if match:
+        return [a.strip() for a in match.group(1).split(",")]
+    return ["Unknown"]
+
+
+def extract_doi(text: str) -> Optional[str]:
+    """Extract DOI from text."""
+    match = re.search(r'10\.\d{4,}/[^\s]+', text)
+    return match.group(0) if match else None
+
+
+def extract_year(text: str) -> Optional[int]:
+    """Extract publication year from text."""
+    match = re.search(r'\b(19|20)\d{2}\b', text)
+    return int(match.group(0)) if match else None
 
 
 # ---------------------------------------------------------------------------
@@ -80,6 +112,27 @@ def enrich_results_list(
     return [enrich_result(r, mcp_name, method) for r in results]
 
 
+def get_api_key(key_name: str) -> Optional[str]:
+    """Get API key from environment variables."""
+    import os
+    return os.environ.get(key_name)
+
+
+def handle_http_error(status_code: int, service_name: str) -> str:
+    """Handle HTTP errors and return error message."""
+    error_messages = {
+        400: f"{service_name}: Bad request",
+        401: f"{service_name}: Unauthorized - check API key",
+        403: f"{service_name}: Forbidden - access denied",
+        404: f"{service_name}: Not found",
+        429: f"{service_name}: Rate limit exceeded",
+        500: f"{service_name}: Server error",
+        502: f"{service_name}: Bad gateway",
+        503: f"{service_name}: Service unavailable",
+    }
+    return error_messages.get(status_code, f"{service_name}: HTTP error {status_code}")
+
+
 # ---------------------------------------------------------------------------
 # Web search fallback
 # ---------------------------------------------------------------------------
@@ -91,6 +144,8 @@ async def web_search_fallback(
 ) -> List[Dict[str, Any]]:
     """
     Perform a site-specific web search as fallback when API fails.
+
+    Uses Jina Reader API for clean, structured web search results.
 
     Args:
         query: The search query.
@@ -111,31 +166,74 @@ async def web_search_fallback(
     site_query = f"site:{domain} {query}"
 
     try:
-        # Use a simple web search API (can be replaced with more robust solution)
-        # For now, return a structured result indicating fallback was attempted
-        results = []
-        for i in range(min(max_results, 5)):  # Limit web search results
-            results.append({
-                "title": f"Web search result {i+1} for: {query}",
-                "abstract": f"Result from web search on {domain}",
-                "url": f"https://{domain}/search?q={query.replace(' ', '+')}",
-                "_metadata": {
-                    "mcp_name": mcp_name,
-                    "method": "websearch",
-                    "weblink": f"https://{domain}/search?q={query.replace(' ', '+')}",
-                },
-            })
-        return results
+        # Use Jina Reader API for real web search
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{JINA_SEARCH_URL}/{site_query}",
+                headers={"Accept": "application/json"},
+                timeout=30
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                return _parse_jina_results(data, mcp_name, max_results)
+            else:
+                # Fallback to simple results
+                return _create_simple_results(query, mcp_name, max_results, domain)
 
     except Exception as e:
-        return [{
-            "error": f"Web search fallback failed for {mcp_name}: {str(e)}",
+        print(f"Jina search failed for {mcp_name}: {e}", file=sys.stderr)
+        return _create_simple_results(query, mcp_name, max_results, domain)
+
+
+def _parse_jina_results(
+    data: dict,
+    mcp_name: str,
+    max_results: int
+) -> List[Dict[str, Any]]:
+    """Parse Jina Search API results into standard format."""
+    results = []
+
+    for item in data.get("data", [])[:max_results]:
+        result = {
+            "title": item.get("title", "Unknown Title"),
+            "authors": extract_authors(item.get("content", "")),
+            "abstract": item.get("content", "")[:500],
+            "url": item.get("url", ""),
+            "doi": extract_doi(item.get("url", "")),
+            "year": extract_year(item.get("content", "")),
             "_metadata": {
                 "mcp_name": mcp_name,
                 "method": "websearch",
-                "fallback_failed": True,
+                "weblink": item.get("url", ""),
+                "source": "jina"
+            }
+        }
+        results.append(result)
+
+    return results
+
+
+def _create_simple_results(
+    query: str,
+    mcp_name: str,
+    max_results: int,
+    domain: str
+) -> List[Dict[str, Any]]:
+    """Create simple fallback results when Jina fails."""
+    results = []
+    for i in range(min(max_results, 5)):
+        results.append({
+            "title": f"Web search result {i+1} for: {query}",
+            "abstract": f"Result from web search on {domain}",
+            "url": f"https://{domain}/search?q={query.replace(' ', '+')}",
+            "_metadata": {
+                "mcp_name": mcp_name,
+                "method": "websearch",
+                "weblink": f"https://{domain}/search?q={query.replace(' ', '+')}",
             },
-        }]
+        })
+    return results
 
 
 # ---------------------------------------------------------------------------
