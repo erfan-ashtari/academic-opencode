@@ -8,6 +8,26 @@ triggers:
   - "reference format"
   - "bibliography management"
   - "validate doi"
+mcp:
+  crossref:
+    command: python
+    args: ["mcp_servers/crossref-mcp/server.py"]
+  semantic-scholar:
+    command: python
+    args: ["mcp_servers/semantic-scholar-mcp/server.py"]
+  zotero:
+    command: python
+    args: ["mcp_servers/zotero-mcp/server.py"]
+---
+name: citation-manager
+description: Format citations and references in APA, IEEE, Chicago, MLA, Harvard, and Vancouver styles. Generate BibTeX entries, validate DOIs, and manage bibliographies.
+triggers:
+  - "format citations"
+  - "generate bibtex"
+  - "citation style"
+  - "reference format"
+  - "bibliography management"
+  - "validate doi"
 ---
 
 # Citation Manager Skill

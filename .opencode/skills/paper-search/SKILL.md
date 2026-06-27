@@ -1,5 +1,67 @@
 ---
 name: paper-search
+description: Search for academic papers across multiple databases (arXiv, PubMed, Semantic Scholar, IEEE Xplore, ACM, OpenAlex, Crossref, SSRN, DBLP, bioRxiv, Europe PMC, Google Scholar, Scopus, ACL Anthology) with unified results, deduplication, and PDF availability tagging.
+version: 1.0.0
+author: OpenCode Community
+triggers:
+  - "Find papers about..."
+  - "Search for research on..."
+  - "Look up academic papers on..."
+  - "Search papers"
+  - "Search for recent papers on..."
+  - "Find articles about..."
+  - "Look up scholarly articles on..."
+  - "Find related work on..."
+  - "What papers exist on..."
+  - "Search literature for..."
+mcp:
+  arxiv:
+    command: python
+    args: ["mcp_servers/arxiv-mcp/server.py"]
+  semantic-scholar:
+    command: python
+    args: ["mcp_servers/semantic-scholar-mcp/server.py"]
+  pubmed:
+    command: python
+    args: ["mcp_servers/pubmed-mcp/server.py"]
+  ieee-xplore:
+    command: python
+    args: ["mcp_servers/ieee-xplore-mcp/server.py"]
+  acm-dl:
+    command: python
+    args: ["mcp_servers/acm-dl-mcp/server.py"]
+  openalex:
+    command: python
+    args: ["mcp_servers/openalex-mcp/server.py"]
+  crossref:
+    command: python
+    args: ["mcp_servers/crossref-mcp/server.py"]
+  ssrn:
+    command: python
+    args: ["mcp_servers/ssrn-mcp/server.py"]
+  dblp:
+    command: python
+    args: ["mcp_servers/dblp-mcp/server.py"]
+  biorxiv:
+    command: python
+    args: ["mcp_servers/biorxiv-mcp/server.py"]
+  europepmc:
+    command: python
+    args: ["mcp_servers/europepmc-mcp/server.py"]
+  google-scholar:
+    command: python
+    args: ["mcp_servers/google-scholar-mcp/server.py"]
+  zotero:
+    command: python
+    args: ["mcp_servers/zotero-mcp/server.py"]
+  scopus:
+    command: python
+    args: ["mcp_servers/scopus-mcp/server.py"]
+  acl-anthology:
+    command: python
+    args: ["mcp_servers/acl-anthology-mcp/server.py"]
+---
+name: paper-search
 description: Search for academic papers across multiple databases (arXiv, PubMed, Semantic Scholar, IEEE Xplore, ACM, OpenAlex, Crossref, SSRN, DBLP, bioRxiv, Europe PMC, Google Scholar, Scopus) with unified results, deduplication, and PDF availability tagging.
 version: 1.0.0
 author: OpenCode Community

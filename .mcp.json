@@ -74,6 +74,16 @@
       "type": "stdio",
       "command": "python",
       "args": ["mcp_servers/document-converter/server.py"]
+    },
+    "scopus": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["mcp_servers/scopus-mcp/server.py"]
+    },
+    "acl-anthology": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["mcp_servers/acl-anthology-mcp/server.py"]
     }
   }
 }

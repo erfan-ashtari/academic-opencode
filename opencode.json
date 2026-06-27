@@ -19,7 +19,88 @@
     "websearch": "allow",
     "external_directory": "allow"
   },
-  "mcp": {},
+  "mcp": {
+    "arxiv": {
+      "type": "local",
+      "command": ["python", "mcp_servers/arxiv-mcp/server.py"],
+      "enabled": true
+    },
+    "semantic-scholar": {
+      "type": "local",
+      "command": ["python", "mcp_servers/semantic-scholar-mcp/server.py"],
+      "enabled": true
+    },
+    "pubmed": {
+      "type": "local",
+      "command": ["python", "mcp_servers/pubmed-mcp/server.py"],
+      "enabled": true
+    },
+    "zotero": {
+      "type": "local",
+      "command": ["python", "mcp_servers/zotero-mcp/server.py"],
+      "enabled": true
+    },
+    "ieee-xplore": {
+      "type": "local",
+      "command": ["python", "mcp_servers/ieee-xplore-mcp/server.py"],
+      "enabled": true
+    },
+    "acm-dl": {
+      "type": "local",
+      "command": ["python", "mcp_servers/acm-dl-mcp/server.py"],
+      "enabled": true
+    },
+    "openalex": {
+      "type": "local",
+      "command": ["python", "mcp_servers/openalex-mcp/server.py"],
+      "enabled": true
+    },
+    "crossref": {
+      "type": "local",
+      "command": ["python", "mcp_servers/crossref-mcp/server.py"],
+      "enabled": true
+    },
+    "ssrn": {
+      "type": "local",
+      "command": ["python", "mcp_servers/ssrn-mcp/server.py"],
+      "enabled": true
+    },
+    "dblp": {
+      "type": "local",
+      "command": ["python", "mcp_servers/dblp-mcp/server.py"],
+      "enabled": true
+    },
+    "biorxiv": {
+      "type": "local",
+      "command": ["python", "mcp_servers/biorxiv-mcp/server.py"],
+      "enabled": true
+    },
+    "europepmc": {
+      "type": "local",
+      "command": ["python", "mcp_servers/europepmc-mcp/server.py"],
+      "enabled": true
+    },
+    "google-scholar": {
+      "type": "local",
+      "command": ["python", "mcp_servers/google-scholar-mcp/server.py"],
+      "enabled": true
+    },
+    "document-converter": {
+      "type": "local",
+      "command": ["python", "mcp_servers/document-converter/server.py"],
+      "enabled": true
+    },
+    "scopus": {
+      "type": "local",
+      "command": ["python", "mcp_servers/scopus-mcp/server.py"],
+      "enabled": true
+    },
+    "acl-anthology": {
+      "type": "local",
+      "command": ["python", "mcp_servers/acl-anthology-mcp/server.py"],
+      "enabled": true
+    }
+  },
   "experimental": {
     "primary_tools": ["edit", "bash"]
   }

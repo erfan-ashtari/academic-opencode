@@ -6,22 +6,26 @@
       "model": "opencode/mimo-v2.5-free",
       "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
       "temperature": 0.7,
+      "thinking": { "type": "enabled", "budgetTokens": 32000 },
       "permission": { "edit": "allow", "bash": "allow", "webfetch": "allow" }
     },
     "hephaestus": {
       "model": "opencode/mimo-v2.5-free",
       "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
-      "temperature": 0.7
+      "temperature": 0.7,
+      "thinking": { "type": "enabled", "budgetTokens": 16000 }
     },
     "prometheus": {
       "model": "opencode/mimo-v2.5-free",
       "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
-      "temperature": 0.7
+      "temperature": 0.7,
+      "thinking": { "type": "enabled", "budgetTokens": 16000 }
     },
     "oracle": {
       "model": "opencode/mimo-v2.5-free",
       "fallback_models": ["opencode/big-pickle", "opencode/deepseek-v4-flash-free"],
-      "temperature": 0.7
+      "temperature": 0.7,
+      "thinking": { "type": "enabled", "budgetTokens": 32000 }
     },
     "librarian": {
       "model": "opencode/deepseek-v4-flash-free",
@@ -57,7 +61,21 @@
     "deep": { "model": "opencode/big-pickle" },
     "ultrabrain": { "model": "opencode/big-pickle" },
     "writing": { "model": "opencode/mimo-v2.5-free" },
-    "artistry": { "model": "opencode/mimo-v2.5-free" }
+    "artistry": { "model": "opencode/mimo-v2.5-free" },
+    "academic-research": {
+      "model": "opencode/mimo-v2.5-free",
+      "temperature": 0.3,
+      "reasoningEffort": "high",
+      "thinking": { "type": "enabled", "budgetTokens": 16000 },
+      "prompt_append": "You are an academic research specialist. Prioritize accuracy, cite sources, and follow academic standards."
+    },
+    "academic-writing": {
+      "model": "opencode/mimo-v2.5-free",
+      "temperature": 0.5,
+      "reasoningEffort": "medium",
+      "thinking": { "type": "enabled", "budgetTokens": 8000 },
+      "prompt_append": "You are an academic writer. Use formal tone, proper citations, and follow venue guidelines."
+    }
   },
 
   "disabled_agents": [],
